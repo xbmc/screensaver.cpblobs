@@ -4,17 +4,16 @@
 #ifndef BLOBBY_H
 #define BLOBBY_H
 
-#include "xbsBase.h"
-
 #include "IsoSurface.h"
+#include "types.h"
 
 const int MAXBLOBPOINTS = 5;
 
 struct BlobPoint
 {
-	D3DXVECTOR3 m_Position;
+	CVector m_Position;
 	float m_fInfluence;
-	D3DXVECTOR3 m_Speeds;
+	CVector m_Speeds;
 };
 
 class Blobby : public IsoSurface

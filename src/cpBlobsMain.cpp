@@ -2,6 +2,11 @@
 // XBMC screensaver displaying metaballs moving around in an environment
 // Simon Windmill (siw@coolpowers.com)
 
+#include <xbmc_scr_dll.h>
+#include <libXBMC_addon.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <SOIL/SOIL.h>
 #include "cpBlobsMain.h"
 
 #include "Blobby.h"
@@ -18,16 +23,18 @@ static float g_fTicks = 0.0f;
 
 float g_fTickSpeed = 0.01f;
 
-D3DXVECTOR3 g_WorldRotSpeeds;
+CVector g_WorldRotSpeeds;
 char g_strCubemap[1024];
 char g_strDiffuseCubemap[1024];
 char g_strSpecularCubemap[1024];
 
-bool g_bShowCube = true;
-	
-DWORD g_BlendStyle;
+bool g_bShowCube = false;
+bool g_bShowBlob = false;
+bool g_bShowDebug = true;
 
-DWORD g_BGTopColor, g_BGBottomColor;
+int g_BlendStyle;
+
+CRGBA g_BGTopColor, g_BGBottomColor;
 
 float g_fFOV, g_fAspectRatio;
 
@@ -36,85 +43,84 @@ float g_fFOV, g_fAspectRatio;
 // stuff for the environment cube
 struct CubeVertex
 {
-	D3DXVECTOR3 position;
-	D3DXVECTOR3 normal;
+  CVector position;
+  CVector normal;
 };
-
-#define FVF_CUBEVERTEX D3DFVF_XYZ | D3DFVF_NORMAL
 
 // man, how many times have you typed (or pasted) this data for a cube's
 // vertices and normals, eh?
 CubeVertex g_cubeVertices[] =
 {
-    {D3DXVECTOR3(-1.0f, 1.0f,-1.0f), D3DXVECTOR3(0.0f, 0.0f,1.0f), },
-    {D3DXVECTOR3( 1.0f, 1.0f,-1.0f), D3DXVECTOR3(0.0f, 0.0f,1.0f), },
-    {D3DXVECTOR3(-1.0f,-1.0f,-1.0f), D3DXVECTOR3(0.0f, 0.0f,1.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f,-1.0f), D3DXVECTOR3(0.0f, 0.0f,1.0f), },
+    {CVector(-1.0f, 1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
+    {CVector( 1.0f, 1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
+    {CVector(-1.0f,-1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
+    {CVector( 1.0f,-1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
 
-    {D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), },
-    {D3DXVECTOR3(-1.0f,-1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), },
-    {D3DXVECTOR3( 1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f, 1.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f), },
+    {CVector(-1.0f, 1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
+    {CVector(-1.0f,-1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
+    {CVector( 1.0f, 1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
+    {CVector( 1.0f,-1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
 
-    {D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f, 1.0f, 1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), },
-    {D3DXVECTOR3(-1.0f, 1.0f,-1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f, 1.0f,-1.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f), },
+    {CVector(-1.0f, 1.0f, 1.0f), CVector(0.0f, -1.0f, 0.0f), },
+    {CVector( 1.0f, 1.0f, 1.0f), CVector(0.0f, -1.0f, 0.0f), },
+    {CVector(-1.0f, 1.0f,-1.0f), CVector(0.0f, -1.0f, 0.0f), },
+    {CVector( 1.0f, 1.0f,-1.0f), CVector(0.0f, -1.0f, 0.0f), },
 
-    {D3DXVECTOR3(-1.0f,-1.0f, 1.0f), D3DXVECTOR3(0.0f,1.0f, 0.0f), },
-    {D3DXVECTOR3(-1.0f,-1.0f,-1.0f), D3DXVECTOR3(0.0f,1.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f, 1.0f), D3DXVECTOR3(0.0f,1.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f,-1.0f), D3DXVECTOR3(0.0f,1.0f, 0.0f), },
+    {CVector(-1.0f,-1.0f, 1.0f), CVector(0.0f,1.0f, 0.0f), },
+    {CVector(-1.0f,-1.0f,-1.0f), CVector(0.0f,1.0f, 0.0f), },
+    {CVector( 1.0f,-1.0f, 1.0f), CVector(0.0f,1.0f, 0.0f), },
+    {CVector( 1.0f,-1.0f,-1.0f), CVector(0.0f,1.0f, 0.0f), },
 
-    {D3DXVECTOR3( 1.0f, 1.0f,-1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f, 1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f,-1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3( 1.0f,-1.0f, 1.0f), D3DXVECTOR3(-1.0f, 0.0f, 0.0f), },
+    {CVector( 1.0f, 1.0f,-1.0f), CVector(-1.0f, 0.0f, 0.0f), },
+    {CVector( 1.0f, 1.0f, 1.0f), CVector(-1.0f, 0.0f, 0.0f), },
+    {CVector( 1.0f,-1.0f,-1.0f), CVector(-1.0f, 0.0f, 0.0f), },
+    {CVector( 1.0f,-1.0f, 1.0f), CVector(-1.0f, 0.0f, 0.0f), },
 
-    {D3DXVECTOR3(-1.0f, 1.0f,-1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3(-1.0f,-1.0f,-1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), },
-    {D3DXVECTOR3(-1.0f,-1.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f), }
+    {CVector(-1.0f, 1.0f,-1.0f), CVector(1.0f, 0.0f, 0.0f), },
+    {CVector(-1.0f,-1.0f,-1.0f), CVector(1.0f, 0.0f, 0.0f), },
+    {CVector(-1.0f, 1.0f, 1.0f), CVector(1.0f, 0.0f, 0.0f), },
+    {CVector(-1.0f,-1.0f, 1.0f), CVector(1.0f, 0.0f, 0.0f), }
 };
-
-LPDIRECT3DVERTEXBUFFER8 g_pCubeVertexBuffer = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // stuff for the background plane
 
-struct BG_VERTEX 
+struct BG_VERTEX
 {
-    D3DXVECTOR4 position;
-    DWORD       color;
+  CVector position;
+  CRGBA color;
 };
 
 BG_VERTEX g_BGVertices[4];
+
+GLuint cubeTexture=0;
+GLuint diffuseTexture=0;
+GLuint specTexture=0;
+ADDON::CHelper_libXBMC_addon *XBMC           = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // fill in background vertex array with values that will
 // completely cover screen
-void SetupGradientBackground( DWORD dwTopColor, DWORD dwBottomColor )
+void SetupGradientBackground(const CRGBA& dwTopColor, const CRGBA& dwBottomColor)
 {
-	float x1 = -0.5f;
-	float y1 = -0.5f;
-	float x2 = (float)m_iWidth - 0.5f;
-    float y2 = (float)m_iHeight - 0.5f;
-	
-	g_BGVertices[0].position = D3DXVECTOR4( x2, y1, 0.0f, 1.0f );
-    g_BGVertices[0].color = dwTopColor;
+  float x1 = -0.5f;
+  float y1 = -0.5f;
+  float x2 = (float)m_iWidth - 0.5f;
+  float y2 = (float)m_iHeight - 0.5f;
 
-    g_BGVertices[1].position = D3DXVECTOR4( x2, y2, 0.0f, 1.0f );
-    g_BGVertices[1].color = dwBottomColor;
+  g_BGVertices[0].position = CVector( x2, y1, 0.0f);
+  g_BGVertices[0].color = dwTopColor;
 
-    g_BGVertices[2].position = D3DXVECTOR4( x1, y1, 0.0f, 1.0f );
-    g_BGVertices[2].color = dwTopColor;
+  g_BGVertices[1].position = CVector( x2, y2, 0.0f);
+  g_BGVertices[1].color = dwBottomColor;
 
-    g_BGVertices[3].position = D3DXVECTOR4( x1, y2, 0.0f, 1.0f );
-    g_BGVertices[3].color = dwBottomColor;
-	
-	return;
+  g_BGVertices[2].position = CVector( x1, y1, 0.0f);
+  g_BGVertices[2].color = dwTopColor;
+
+  g_BGVertices[3].position = CVector( x1, y2, 0.0f);
+  g_BGVertices[3].color = dwBottomColor;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,50 +128,116 @@ void SetupGradientBackground( DWORD dwTopColor, DWORD dwBottomColor )
 
 void RenderGradientBackground()
 {
-    // clear textures
-    m_pd3dDevice->SetTexture( 0, NULL );
-	m_pd3dDevice->SetTexture( 1, NULL );
-    d3dSetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_DISABLE );
-	d3dSetTextureStageState( 1, D3DTSS_COLOROP, D3DTOP_DISABLE );
-
-	// don't write to z-buffer
-	d3dSetRenderState( D3DRS_ZENABLE, FALSE ); 
-    
-	m_pd3dDevice->SetVertexShader( D3DFVF_XYZRHW | D3DFVF_DIFFUSE );
-	m_pd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, g_BGVertices, sizeof(BG_VERTEX) );
-
-	// restore state
-	d3dSetRenderState( D3DRS_ZENABLE, TRUE ); 
-
-	return;
+  glDisable(GL_TEXTURE_2D);
+  glActiveTexture(GL_TEXTURE0);
+  glDisable(GL_TEXTURE_CUBE_MAP);
+  glBegin(GL_TRIANGLE_STRIP);
+  for (size_t i=0;i<4;++i)
+  {
+    glColor3f(g_BGVertices[i].color.r/255.0, g_BGVertices[i].color.g/255.0,
+              g_BGVertices[i].color.b/255.0);
+    glVertex3f(g_BGVertices[i].position.x, g_BGVertices[i].position.y,
+               g_BGVertices[i].position.z);
+  }
+  glEnd();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-LPDIRECT3DCUBETEXTURE8	g_pCubeTexture	= NULL;
-LPDIRECT3DCUBETEXTURE8	g_pDiffuseCubeTexture	= NULL;
-LPDIRECT3DCUBETEXTURE8	g_pSpecularCubeTexture	= NULL;
-
-// XBMC has loaded us into memory,
-// we should set our core values
-// here and load any settings we
-// may have from our config file
-extern "C" void Create(LPDIRECT3DDEVICE8 pd3dDevice, int iWidth, int iHeight, const char* szScreenSaverName)
+void SetDefaults()
 {
-#ifdef _TEST
-	strcpy( m_szScrName, "cpBlobs" );
-#else
-	strcpy(m_szScrName,szScreenSaverName);
-#endif
-	m_pd3dDevice = pd3dDevice;
-	m_iWidth = iWidth;
-	m_iHeight = iHeight;
+  // set any default values for your screensaver's parameters
+  g_fFOV = 45.0f;
+  g_fAspectRatio = 1.33f;
 
-	m_pBlobby = new Blobby();
-	m_pBlobby->m_iNumPoints = 5;
-	
-	// Load the settings
-	LoadSettings();
+  g_WorldRotSpeeds.x = 1.0f;
+  g_WorldRotSpeeds.y = 0.5f;
+  g_WorldRotSpeeds.z = 0.25f;
+
+  XBMC->GetSetting("__addonpath__", g_strCubemap);
+  strcat(g_strCubemap, "/resources/cube.dds");
+  XBMC->GetSetting("__addonpath__", g_strDiffuseCubemap);
+  strcat(g_strDiffuseCubemap, "/resources/cube_diffuse.dds");
+  XBMC->GetSetting("__addonpath__", g_strSpecularCubemap);
+  strcat(g_strSpecularCubemap, "/resources/cube_specular.dds");
+
+  m_pBlobby->m_fMoveScale = 0.3f;
+
+
+  g_bShowCube = true;
+  g_bShowBlob = true;
+  g_bShowDebug = false;
+
+  m_pBlobby->m_BlobPoints[0].m_Position.x = 0.5f;
+  m_pBlobby->m_BlobPoints[0].m_Position.y = 0.5f;
+  m_pBlobby->m_BlobPoints[0].m_Position.z = 0.5f;
+  m_pBlobby->m_BlobPoints[0].m_fInfluence = 0.25f;
+  m_pBlobby->m_BlobPoints[0].m_Speeds.x = 2.0f;
+  m_pBlobby->m_BlobPoints[0].m_Speeds.y = 4.0f;
+  m_pBlobby->m_BlobPoints[0].m_Speeds.z = 0.0f;
+  m_pBlobby->m_BlobPoints[1].m_Position.x = 0.6f;
+  m_pBlobby->m_BlobPoints[1].m_Position.y = 0.5f;
+  m_pBlobby->m_BlobPoints[1].m_Position.z = 0.5f;
+  m_pBlobby->m_BlobPoints[1].m_fInfluence = 0.51f;
+  m_pBlobby->m_BlobPoints[1].m_Speeds.x = -4.0f;
+  m_pBlobby->m_BlobPoints[1].m_Speeds.y = 2.0f;
+  m_pBlobby->m_BlobPoints[1].m_Speeds.z = 0.0f;
+  m_pBlobby->m_BlobPoints[2].m_Position.x = 0.3f;
+  m_pBlobby->m_BlobPoints[2].m_Position.y = 0.5f;
+  m_pBlobby->m_BlobPoints[2].m_Position.z = 0.3f;
+  m_pBlobby->m_BlobPoints[2].m_fInfluence = 0.1f;
+  m_pBlobby->m_BlobPoints[2].m_Speeds.x = -2.0f;
+  m_pBlobby->m_BlobPoints[2].m_Speeds.y = 0.0f;
+  m_pBlobby->m_BlobPoints[2].m_Speeds.z = 3.0f;
+  m_pBlobby->m_BlobPoints[3].m_Position.x = 0.5f;
+  m_pBlobby->m_BlobPoints[3].m_Position.y = 0.5f;
+  m_pBlobby->m_BlobPoints[3].m_Position.z = 0.5f;
+  m_pBlobby->m_BlobPoints[3].m_fInfluence = 0.25f;
+  m_pBlobby->m_BlobPoints[3].m_Speeds.x = 0.0f;
+  m_pBlobby->m_BlobPoints[3].m_Speeds.y = 2.0f;
+  m_pBlobby->m_BlobPoints[3].m_Speeds.z = 1.0f;
+  m_pBlobby->m_BlobPoints[4].m_Position.x = 0.5f;
+  m_pBlobby->m_BlobPoints[4].m_Position.y = 0.5f;
+  m_pBlobby->m_BlobPoints[4].m_Position.z = 0.5f;
+  m_pBlobby->m_BlobPoints[4].m_fInfluence = 0.15f;
+  m_pBlobby->m_BlobPoints[4].m_Speeds.x = 0.5f;
+  m_pBlobby->m_BlobPoints[4].m_Speeds.y = 0.0f;
+  m_pBlobby->m_BlobPoints[4].m_Speeds.z = 1.0f;
+
+  m_pBlobby->SetDensity( 32 );
+  m_pBlobby->m_TargetValue = 24.0f;
+  g_BGTopColor = CRGBA(0, 0, 0, 255);
+  g_BGBottomColor = CRGBA(0, 0, 100, 255);
+}
+
+////////////////////////////////////////////////////////////////////////////
+// XBMC has loaded us into memory, we should set our core values
+// here and load any settings we may have from our config file
+//
+ADDON_STATUS ADDON_Create(void* hdl, void* props)
+{
+  if (!props)
+    return ADDON_STATUS_UNKNOWN;
+
+  if (!XBMC)
+    XBMC = new ADDON::CHelper_libXBMC_addon;
+
+  if (!XBMC->RegisterMe(hdl))
+  {
+    delete XBMC, XBMC=NULL;
+    return ADDON_STATUS_PERMANENT_FAILURE;
+  }
+
+  SCR_PROPS* scrprops = (SCR_PROPS*)props;
+
+  m_iWidth = scrprops->width;
+  m_iHeight  = scrprops->height;
+
+  m_pBlobby = new Blobby();
+  m_pBlobby->m_iNumPoints = 5;
+
+  SetDefaults();
+  g_fAspectRatio = (float)m_iWidth/(float)m_iHeight;
+
+  return ADDON_STATUS_OK;
 }
 
 // XBMC tells us we should get ready
@@ -173,38 +245,14 @@ extern "C" void Create(LPDIRECT3DDEVICE8 pd3dDevice, int iWidth, int iHeight, co
 // is called once when the screensaver
 // is activated by XBMC.
 extern "C" void Start()
-{	
-	d3dSetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-	d3dSetRenderState( D3DRS_LIGHTING, FALSE );
-	d3dSetRenderState( D3DRS_ZENABLE, D3DZB_TRUE );
-	d3dSetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-	d3dSetRenderState( D3DRS_NORMALIZENORMALS, FALSE );
-	
-	
-	m_pBlobby->Init( m_pd3dDevice );
-	
-	d3dSetTextureStageState( 0, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
-	d3dSetTextureStageState( 0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR );
-	d3dSetTextureStageState( 1, D3DTSS_MINFILTER, D3DTEXF_LINEAR );
-	d3dSetTextureStageState( 1, D3DTSS_MAGFILTER, D3DTEXF_LINEAR );
+{
+  cubeTexture = SOIL_load_OGL_single_cubemap(g_strCubemap, "UWSNED", 4, 0, 0);
+  diffuseTexture = SOIL_load_OGL_single_cubemap(g_strDiffuseCubemap, "UWSNED", 4, 0, 0);
+  specTexture = SOIL_load_OGL_single_cubemap(g_strSpecularCubemap, "UWSNED", 4, 0, 0);
 
-	D3DXCreateCubeTextureFromFile( m_pd3dDevice, g_strCubemap, &g_pCubeTexture );
-	D3DXCreateCubeTextureFromFile( m_pd3dDevice, g_strDiffuseCubemap, &g_pDiffuseCubeTexture );
-	D3DXCreateCubeTextureFromFile( m_pd3dDevice, g_strSpecularCubemap, &g_pSpecularCubeTexture );
+  SetupGradientBackground(g_BGTopColor, g_BGBottomColor);
 
-	m_pd3dDevice->CreateVertexBuffer( 24*sizeof(CubeVertex), 0, 
-		                              FVF_CUBEVERTEX, D3DPOOL_DEFAULT, 
-                                      &g_pCubeVertexBuffer );
- 
-    void *pVertices = NULL;
-
-    g_pCubeVertexBuffer->Lock( 0, sizeof(g_cubeVertices), (BYTE**)&pVertices, 0 );
-    memcpy( pVertices, g_cubeVertices, sizeof(g_cubeVertices) );
-    g_pCubeVertexBuffer->Unlock();
-
-	SetupGradientBackground( g_BGTopColor, g_BGBottomColor );
-
-	return;
+  return;
 }
 
 // XBMC tells us to render a frame of
@@ -214,127 +262,196 @@ extern "C" void Start()
 // device will already have been cleared.
 extern "C" void Render()
 {
-	// I know I'm not scaling by time here to get a constant framerate,
-	// but I believe this to be acceptable for this application
-	m_pBlobby->AnimatePoints( g_fTicks );	
-	m_pBlobby->March();
+  // I know I'm not scaling by time here to get a constant framerate,
+  // but I believe this to be acceptable for this application
+  m_pBlobby->AnimatePoints(g_fTicks);
+  m_pBlobby->March();
+  glClear(GL_DEPTH_BUFFER_BIT);
 
-	// setup rotation
-	D3DXMATRIX matWorld;
-   	D3DXMatrixIdentity( &matWorld );
-	D3DXMatrixRotationYawPitchRoll( &matWorld, g_WorldRotSpeeds.x * g_fTicks, g_WorldRotSpeeds.y * g_fTicks, g_WorldRotSpeeds.z * g_fTicks );
-   	d3dSetTransform( D3DTS_WORLD, &matWorld );
+  glEnable(GL_DEPTH_TEST);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(g_fFOV, g_fAspectRatio, 0.05, 100.0);
 
-	// setup viewpoint
-	D3DXMATRIX matView;
-	D3DXVECTOR3 campos( 0.0f, 0.0f, -0.8f );
-	D3DXVECTOR3 camto( 0.0f, 0.0f, 0.0f );
-	D3DXVECTOR3 upvec( 0.0f, 1.0f, 0.0f );
-	D3DXMatrixLookAtLH( &matView, &campos, &camto, &upvec );
-	d3dSetTransform( D3DTS_VIEW, &matView );
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glEnable(GL_CULL_FACE);
 
-  // setup projection
- 	D3DXMATRIX matProj;
-	D3DXMatrixPerspectiveFovLH( &matProj, D3DXToRadian( g_fFOV ), g_fAspectRatio, 0.05f, 100.0f );
-	d3dSetTransform( D3DTS_PROJECTION, &matProj );
+  if (g_bShowDebug )
+  {
+    glDisable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+    glDisable(GL_TEXTURE_2D);
+    glActiveTexture(GL_TEXTURE0);
+    glDisable(GL_TEXTURE_CUBE_MAP);
+    CVector vertices[] = {
+      CVector(0.25, 0.25, -3), CVector(1, 0.25, -3), CVector(0.25, 1, -3),
+      CVector(0, 0, -2), CVector(0.75, 0, -2), CVector(0, 0.75, -2),
+      CVector(0.25, 0.25, -4), CVector(1, 0.25, -4), CVector(0.25, 1, -4),
+      CVector(0, 0, -5), CVector(0.75, 0, -5), CVector(0, 0.75, -5),
+    };
+    CVector tricolors[] = {
+      CVector(0.88, 0.1, 0.00), CVector(0, 0.5, 1.0),
+      CVector(0.88, 0.1, 0.00), CVector(0, 0.5, 1.0)
+    };
 
-	d3dSetRenderState( D3DRS_FILLMODE, D3DFILL_SOLID );
+    glBegin(GL_TRIANGLES);
+    for (size_t i=0;i<12;++i)
+    {
+      glNormal3f(g_cubeVertices[i].normal.x, g_cubeVertices[i].normal.y,
+                 g_cubeVertices[i].normal.z);
+      glColor4f(tricolors[i / 3].x, tricolors[i / 3].y,
+                tricolors[i / 3].z, 1.0);
 
-	// setup cubemap
-	m_pd3dDevice->SetTexture( 0, g_pCubeTexture );
-	m_pd3dDevice->SetTexture( 1, NULL );
-	d3dSetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
-	// rotate the cubemap to match the world
-	d3dSetTransform( D3DTS_TEXTURE0, &matWorld );
-	d3dSetTransform( D3DTS_TEXTURE1, &matWorld );
-    
-	// draw the box (inside-out)
-	if ( g_bShowCube )
-	{
-		d3dSetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
-		d3dSetTextureStageState( 0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP );
-		d3dSetTextureStageState( 0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP );
-		d3dSetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
-		d3dSetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 );
-		d3dSetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION );
-		m_pd3dDevice->SetVertexShader( FVF_CUBEVERTEX );
-		m_pd3dDevice->SetStreamSource( 0, g_pCubeVertexBuffer, sizeof(CubeVertex) );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP,  0, 2 );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP,  4, 2 );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP,  8, 2 );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 12, 2 );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 16, 2 );
-		m_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 20, 2 );
-	}
-	else
-		RenderGradientBackground();
+      glVertex3f(vertices[i].x, vertices[i].y,
+                 vertices[i].z);
+    }
+    glEnd();
+    glColor4f(1,1,1,1);
+  }
 
-	m_pd3dDevice->SetTexture( 0, g_pDiffuseCubeTexture );
-	m_pd3dDevice->SetTexture( 1, g_pSpecularCubeTexture );
-	d3dSetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-	d3dSetTextureStageState( 0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 );
-    d3dSetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR );
-	d3dSetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	d3dSetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-	d3dSetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_CURRENT );
-	d3dSetTextureStageState( 0, D3DTSS_ADDRESSU, D3DTADDRESS_WRAP );
-	d3dSetTextureStageState( 0, D3DTSS_ADDRESSV, D3DTADDRESS_WRAP );
+ // setup cubemap
+  glEnable(GL_TEXTURE_2D);
+  glFrontFace(GL_CW);
+  glEnable(GL_TEXTURE_CUBE_MAP);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+  glEnable(GL_TEXTURE_GEN_S);
+  glEnable(GL_TEXTURE_GEN_R);
+  glEnable(GL_TEXTURE_GEN_T);
+  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
+  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
+  glTexGenf(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
 
-	d3dSetTextureStageState( 1, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3 );
-    d3dSetTextureStageState( 1, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR );	
-	d3dSetTextureStageState( 1, D3DTSS_COLOROP,   g_BlendStyle );
-	d3dSetTextureStageState( 1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-	d3dSetTextureStageState( 1, D3DTSS_COLORARG2, D3DTA_CURRENT );
-	d3dSetTextureStageState( 1, D3DTSS_ADDRESSU, D3DTADDRESS_WRAP );
-	d3dSetTextureStageState( 1, D3DTSS_ADDRESSV, D3DTADDRESS_WRAP );
-	
-	m_pBlobby->Render( m_pd3dDevice );
+  glMatrixMode(GL_TEXTURE);
+  glLoadIdentity();
+  glRotatef(g_fTicks * 20.0 , 0.0, 1.0, 0.0);
 
-	// increase tick count
-	g_fTicks += g_fTickSpeed;
+  // draw the box (inside-out)
+  if (g_bShowCube )
+  {
+    glBegin(GL_TRIANGLE_STRIP);
+    for (size_t i=0;i<24;++i)
+    {
+      glNormal3f(g_cubeVertices[i].normal.x, g_cubeVertices[i].normal.y,
+                 g_cubeVertices[i].normal.z);
+      glVertex3f(g_cubeVertices[i].position.x, g_cubeVertices[i].position.y,
+                 g_cubeVertices[i].position.z);
+    }
+    glEnd();
+  }
 
-	return;
+
+  if (g_bShowBlob)
+  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, diffuseTexture);
+    glDisable(GL_TEXTURE_CUBE_MAP);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_R);
+    glDisable(GL_TEXTURE_GEN_T);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, specTexture);
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_R);
+    glEnable(GL_TEXTURE_GEN_T);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
+    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glMatrixMode(GL_TEXTURE);
+    glLoadIdentity();
+    glRotatef(g_fTicks * 20.0 , 0.0, 1.0, 0.0);
+
+    glFrontFace(GL_CCW);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.0, 0.0, -0.8);
+
+    m_pBlobby->Render();
+
+  }
+
+  glActiveTexture(GL_TEXTURE1);
+  glMatrixMode(GL_TEXTURE);
+  glLoadIdentity();
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_TEXTURE_CUBE_MAP);
+  glDisable(GL_TEXTURE_GEN_S);
+  glDisable(GL_TEXTURE_GEN_T);
+  glDisable(GL_TEXTURE_GEN_R);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glMatrixMode(GL_TEXTURE);
+  glLoadIdentity();
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_TEXTURE_CUBE_MAP);
+  glDisable(GL_TEXTURE_GEN_S);
+  glDisable(GL_TEXTURE_GEN_T);
+  glDisable(GL_TEXTURE_GEN_R);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glMatrixMode(GL_TEXTURE);
+  glLoadIdentity();
+  // increase tick count
+  g_fTicks += g_fTickSpeed;
 }
 
 // XBMC tells us to stop the screensaver
 // we should free any memory and release
 // any resources we have created.
-extern "C" void Stop()
+extern "C" void ADDON_Stop()
 {
-	if( g_pCubeTexture != NULL ) 
-        g_pCubeTexture->Release();
+  if (cubeTexture)
+    glDeleteTextures(1, &cubeTexture);
 
-	if( g_pDiffuseCubeTexture != NULL ) 
-        g_pDiffuseCubeTexture->Release();
+  if (diffuseTexture)
+    glDeleteTextures(1, &diffuseTexture);
 
-	if( g_pSpecularCubeTexture != NULL ) 
-        g_pSpecularCubeTexture->Release();
-	
-	delete m_pBlobby;
+  if (specTexture)
+    glDeleteTextures(1, &specTexture);
 
-	if ( g_pCubeVertexBuffer != NULL )
-    {
-        g_pCubeVertexBuffer->Release();
-        g_pCubeVertexBuffer = NULL;
-    }
-
-	return;
+  delete m_pBlobby;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-extern "C" void GetInfo(SCR_INFO* pInfo)
+extern "C" void ADDON_Destroy()
 {
-	// not used, but can be used to pass info
-	// back to XBMC if required in the future
-	return;
 }
 
-extern "C" void __declspec(dllexport) get_module(struct ScreenSaver* pScr)
+extern "C" ADDON_STATUS ADDON_GetStatus()
 {
-	pScr->Create = Create;
-	pScr->Start = Start;
-	pScr->Render = Render;
-	pScr->Stop = Stop;
-	pScr->GetInfo = GetInfo;
+  return ADDON_STATUS_OK;
+}
+
+extern "C" bool ADDON_HasSettings()
+{
+  return false;
+}
+
+extern "C" unsigned int ADDON_GetSettings(ADDON_StructSetting ***sSet)
+{
+  return 0;
+}
+
+extern "C" ADDON_STATUS ADDON_SetSetting(const char *strSetting, const void *value)
+{
+  return ADDON_STATUS_OK;
+}
+
+extern "C" void ADDON_FreeSettings()
+{
+}
+
+extern "C" void ADDON_Announce(const char *flag, const char *sender, const char *message, const void *data)
+{
+}
+
+extern "C" void GetInfo(SCR_INFO *info)
+{
 }

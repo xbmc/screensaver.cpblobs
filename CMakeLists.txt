@@ -6,19 +6,21 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 enable_language(CXX)
 
-find_package(xbmc REQUIRED)
+find_package(kodi REQUIRED)
 find_package(SOIL REQUIRED)
+find_package(OpenGL REQUIRED)
 
 include(ExternalProject)
 
-include_directories(${XBMC_INCLUDE_DIR}
-                    ${SOIL_INCLUDE_DIRS})
+include_directories(${KODI_INCLUDE_DIR}
+                    ${SOIL_INCLUDE_DIRS}
+                    ${OPENGL_INCLUDE_DIRS})
 
-set(CPBLOB_SOURCES src/Blobby.cpp
-                   src/cpBlobsMain.cpp
-                   src/IsoSurface.cpp)
+set(CPBLOBS_SOURCES src/Blobby.cpp
+                    src/cpBlobsMain.cpp
+                    src/IsoSurface.cpp)
 
-set(DEPLIBS ${SOIL_LIBRARIES})
+set(DEPLIBS ${SOIL_LIBRARIES} ${OPENGL_LIBRARIES})
 
 build_addon(screensaver.cpblobs CPBLOBS DEPLIBS)
 

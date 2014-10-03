@@ -2,6 +2,7 @@
 // Simon Windmill (siw@coolpowers.com)
 
 #include "Blobby.h"
+#include <math.h>
 
 // the core of what metaballs are - a series of points and influences,
 // so to sample them we average all the points at a particular location
