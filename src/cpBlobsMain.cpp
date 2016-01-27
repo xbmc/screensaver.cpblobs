@@ -6,7 +6,7 @@
 #include <libXBMC_addon.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <SOIL/SOIL.h>
+#include <SOIL.h>
 #include "cpBlobsMain.h"
 
 #include "Blobby.h"
