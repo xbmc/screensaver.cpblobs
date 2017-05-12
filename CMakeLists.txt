@@ -20,6 +20,11 @@ set(CPBLOBS_SOURCES src/Blobby.cpp
                     src/cpBlobsMain.cpp
                     src/IsoSurface.cpp)
 
+set(CPBLOBS_HEADERS src/Blobby.h
+                    src/cpBlobsMain.h
+                    src/IsoSurface.h
+                    src/types.h)
+
 set(DEPLIBS ${SOIL_LIBRARIES} ${OPENGL_LIBRARIES})
 
 build_addon(screensaver.cpblobs CPBLOBS DEPLIBS)
