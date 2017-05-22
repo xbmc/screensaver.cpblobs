@@ -226,7 +226,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
     return ADDON_STATUS_PERMANENT_FAILURE;
   }
 
-  SCR_PROPS* scrprops = (SCR_PROPS*)props;
+  AddonProps_Screensaver* scrprops = (AddonProps_Screensaver*)props;
 
   m_iWidth = scrprops->width;
   m_iHeight  = scrprops->height;
@@ -406,7 +406,7 @@ extern "C" void Render()
 // XBMC tells us to stop the screensaver
 // we should free any memory and release
 // any resources we have created.
-extern "C" void ADDON_Stop()
+extern "C" void Stop()
 {
   if (cubeTexture)
     glDeleteTextures(1, &cubeTexture);
