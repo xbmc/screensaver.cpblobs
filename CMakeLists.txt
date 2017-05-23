@@ -12,7 +12,7 @@ find_package(OpenGL REQUIRED)
 
 include(ExternalProject)
 
-include_directories(${KODI_INCLUDE_DIR}
+include_directories(${KODI_INCLUDE_DIR}/.. # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
                     ${SOIL_INCLUDE_DIRS}
                     ${OPENGL_INCLUDE_DIRS})
 
@@ -21,7 +21,6 @@ set(CPBLOBS_SOURCES src/Blobby.cpp
                     src/IsoSurface.cpp)
 
 set(CPBLOBS_HEADERS src/Blobby.h
-                    src/cpBlobsMain.h
                     src/IsoSurface.h
                     src/types.h)
 
