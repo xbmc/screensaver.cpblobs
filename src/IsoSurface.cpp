@@ -6,7 +6,11 @@
 #include <math.h>
 #include "IsoSurface.h"
 #include <vector>
+#if defined(__APPLE__)
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 // cube vertices for marching cubes
 static const float g_CubeOffsetVertices[8][3] =

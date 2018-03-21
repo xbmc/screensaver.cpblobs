@@ -25,6 +25,9 @@ set(CPBLOBS_HEADERS src/Blobby.h
                     src/types.h)
 
 set(DEPLIBS ${SOIL_LIBRARIES} ${OPENGL_LIBRARIES})
+if(APPLE)
+  list(APPEND DEPLIBS "-framework CoreFoundation")
+endif()
 
 build_addon(screensaver.cpblobs CPBLOBS DEPLIBS)
 

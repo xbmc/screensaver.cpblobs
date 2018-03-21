@@ -3,8 +3,14 @@
 // Simon Windmill (siw@coolpowers.com)
 
 #include <kodi/addon-instance/Screensaver.h>
+#if defined(__APPLE__)
+#define GL_EXT_texture_cube_map 1
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
 #include <SOIL.h>
 
 #include "Blobby.h"
