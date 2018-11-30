@@ -11,8 +11,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #endif
-#include <SOIL.h>
 
+#include "SOIL2/SOIL2.h"
 #include "Blobby.h"
 
 /*
