@@ -1,27 +1,43 @@
-// cpBlobs
+/*
+ *  Copyright (C) 2005-2019 Team Kodi
+ *  Copyright (C) Simon Windmill (siw@coolpowers.com)
+ *  Ported to Kodi GL4 by Alwin Esch <alwinus@kodi.tv>
+ *  This file is part of Kodi - https://kodi.tv
+ *
+ *  This Program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This Program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Kodi; see the file COPYING.  If not, see
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
+
 // Kodi screensaver displaying metaballs moving around in an environment
-// Simon Windmill (siw@coolpowers.com)
 
-#include <kodi/addon-instance/Screensaver.h>
-#if defined(__APPLE__)
-#define GL_EXT_texture_cube_map 1
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
+#include "cpBlobsMain.h"
 #include "SOIL2/SOIL2.h"
 #include "Blobby.h"
+
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
+#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
 
 /*
  * stuff for the environment cube
  */
 struct CubeVertex
 {
-  CVector position;
-  CVector normal;
+  glm::vec3 position;
+  glm::vec3 normal;
 };
 
 /*
@@ -30,88 +46,43 @@ struct CubeVertex
  */
 CubeVertex g_cubeVertices[] =
 {
-  {CVector(-1.0f, 1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
-  {CVector( 1.0f, 1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
-  {CVector(-1.0f,-1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
-  {CVector( 1.0f,-1.0f,-1.0f), CVector(0.0f, 0.0f,1.0f), },
+  {glm::vec3(-1.0f, 1.0f,-1.0f), glm::vec3(0.0f, 0.0f,1.0f), },
+  {glm::vec3( 1.0f, 1.0f,-1.0f), glm::vec3(0.0f, 0.0f,1.0f), },
+  {glm::vec3(-1.0f,-1.0f,-1.0f), glm::vec3(0.0f, 0.0f,1.0f), },
+  {glm::vec3( 1.0f,-1.0f,-1.0f), glm::vec3(0.0f, 0.0f,1.0f), },
 
-  {CVector(-1.0f, 1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
-  {CVector(-1.0f,-1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
-  {CVector( 1.0f, 1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
-  {CVector( 1.0f,-1.0f, 1.0f), CVector(0.0f, 0.0f, -1.0f), },
+  {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), },
+  {glm::vec3(-1.0f,-1.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), },
+  {glm::vec3( 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), },
+  {glm::vec3( 1.0f,-1.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), },
 
-  {CVector(-1.0f, 1.0f, 1.0f), CVector(0.0f, -1.0f, 0.0f), },
-  {CVector( 1.0f, 1.0f, 1.0f), CVector(0.0f, -1.0f, 0.0f), },
-  {CVector(-1.0f, 1.0f,-1.0f), CVector(0.0f, -1.0f, 0.0f), },
-  {CVector( 1.0f, 1.0f,-1.0f), CVector(0.0f, -1.0f, 0.0f), },
+  {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f), },
+  {glm::vec3( 1.0f, 1.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f), },
+  {glm::vec3(-1.0f, 1.0f,-1.0f), glm::vec3(0.0f, -1.0f, 0.0f), },
+  {glm::vec3( 1.0f, 1.0f,-1.0f), glm::vec3(0.0f, -1.0f, 0.0f), },
 
-  {CVector(-1.0f,-1.0f, 1.0f), CVector(0.0f,1.0f, 0.0f), },
-  {CVector(-1.0f,-1.0f,-1.0f), CVector(0.0f,1.0f, 0.0f), },
-  {CVector( 1.0f,-1.0f, 1.0f), CVector(0.0f,1.0f, 0.0f), },
-  {CVector( 1.0f,-1.0f,-1.0f), CVector(0.0f,1.0f, 0.0f), },
+  {glm::vec3(-1.0f,-1.0f, 1.0f), glm::vec3(0.0f,1.0f, 0.0f), },
+  {glm::vec3(-1.0f,-1.0f,-1.0f), glm::vec3(0.0f,1.0f, 0.0f), },
+  {glm::vec3( 1.0f,-1.0f, 1.0f), glm::vec3(0.0f,1.0f, 0.0f), },
+  {glm::vec3( 1.0f,-1.0f,-1.0f), glm::vec3(0.0f,1.0f, 0.0f), },
 
-  {CVector( 1.0f, 1.0f,-1.0f), CVector(-1.0f, 0.0f, 0.0f), },
-  {CVector( 1.0f, 1.0f, 1.0f), CVector(-1.0f, 0.0f, 0.0f), },
-  {CVector( 1.0f,-1.0f,-1.0f), CVector(-1.0f, 0.0f, 0.0f), },
-  {CVector( 1.0f,-1.0f, 1.0f), CVector(-1.0f, 0.0f, 0.0f), },
+  {glm::vec3( 1.0f, 1.0f,-1.0f), glm::vec3(-1.0f, 0.0f, 0.0f), },
+  {glm::vec3( 1.0f, 1.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 0.0f), },
+  {glm::vec3( 1.0f,-1.0f,-1.0f), glm::vec3(-1.0f, 0.0f, 0.0f), },
+  {glm::vec3( 1.0f,-1.0f, 1.0f), glm::vec3(-1.0f, 0.0f, 0.0f), },
 
-  {CVector(-1.0f, 1.0f,-1.0f), CVector(1.0f, 0.0f, 0.0f), },
-  {CVector(-1.0f,-1.0f,-1.0f), CVector(1.0f, 0.0f, 0.0f), },
-  {CVector(-1.0f, 1.0f, 1.0f), CVector(1.0f, 0.0f, 0.0f), },
-  {CVector(-1.0f,-1.0f, 1.0f), CVector(1.0f, 0.0f, 0.0f), }
+  {glm::vec3(-1.0f, 1.0f,-1.0f), glm::vec3(1.0f, 0.0f, 0.0f), },
+  {glm::vec3(-1.0f,-1.0f,-1.0f), glm::vec3(1.0f, 0.0f, 0.0f), },
+  {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), },
+  {glm::vec3(-1.0f,-1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), }
 };
 
-/*
- * stuff for the background plane
- */
-struct BG_VERTEX
-{
-  CVector position;
-  CRGBA color;
-};
-
-class CScreensaverCpBlobs
-  : public kodi::addon::CAddonBase,
-    public kodi::addon::CInstanceScreensaver
-{
-public:
-  CScreensaverCpBlobs();
-  virtual ~CScreensaverCpBlobs();
-
-  virtual bool Start() override;
-  virtual void Stop() override;
-  virtual void Render() override;
-
-private:
-  static const float g_fTickSpeed;
-  
-  GLuint m_cubeTexture;
-  GLuint m_diffuseTexture;
-  GLuint m_specTexture;
-
-  Blobby *m_pBlobby;
-  BG_VERTEX m_BGVertices[4];
-  float m_fFOV, m_fAspectRatio;
-  float m_fTicks;
-  CVector m_WorldRotSpeeds;
-  std::string m_strCubemap;
-  std::string m_strDiffuseCubemap;
-  std::string m_strSpecularCubemap;
-  bool m_bShowCube;
-  bool m_bShowBlob;
-  bool m_bShowDebug;
-  CRGBA m_BGTopColor, m_BGBottomColor;
-
-  void SetDefaults();
-  void SetupGradientBackground(const CRGBA& dwTopColor, const CRGBA& dwBottomColor);
-  void RenderGradientBackground();
-};
 
 /*
  * these global parameters can all be user-controlled via the XML file
  */
 const float CScreensaverCpBlobs::g_fTickSpeed = 0.01f;
- 
+
 /*
  * Kodi has loaded us into memory, we should set our core values
  * here and load any settings we may have from our config file
@@ -127,7 +98,7 @@ CScreensaverCpBlobs::CScreensaverCpBlobs()
   m_diffuseTexture = 0;
   m_specTexture = 0;
 
-  m_pBlobby = new Blobby();
+  m_pBlobby = new CBlobby(this);
   m_pBlobby->m_iNumPoints = 5;
 
   SetDefaults();
@@ -147,12 +118,22 @@ CScreensaverCpBlobs::~CScreensaverCpBlobs()
  */
 bool CScreensaverCpBlobs::Start()
 {
+  if (!CreateShader("vert.glsl", "frag.glsl") || !CompileAndLink())
+  {
+    kodi::Log(ADDON_LOG_ERROR, "Failed to create and compile shader");
+    return false;
+  }
+
   m_cubeTexture = SOIL_load_OGL_single_cubemap(m_strCubemap.c_str(), "UWSNED", 4, 0, 0);
   m_diffuseTexture = SOIL_load_OGL_single_cubemap(m_strDiffuseCubemap.c_str(), "UWSNED", 4, 0, 0);
   m_specTexture = SOIL_load_OGL_single_cubemap(m_strSpecularCubemap.c_str(), "UWSNED", 4, 0, 0);
 
   SetupGradientBackground(m_BGTopColor, m_BGBottomColor);
 
+  glGenBuffers(1, &m_vertexVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO);
+
+  m_startOK = true;
   return true;
 }
 
@@ -163,6 +144,15 @@ bool CScreensaverCpBlobs::Start()
  */
 void CScreensaverCpBlobs::Stop()
 {
+  if (!m_startOK)
+    return;
+
+  m_startOK = false;
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDeleteBuffers(1, &m_vertexVBO);
+  m_vertexVBO = 0;
+
   if (m_cubeTexture)
     glDeleteTextures(1, &m_cubeTexture);
 
@@ -180,143 +170,139 @@ void CScreensaverCpBlobs::Stop()
  */
 void CScreensaverCpBlobs::Render()
 {
+  if (!m_startOK)
+    return;
+
+  /*
+   * Following Extra work done here in render to prevent problems with controls
+   * from Kodi and during window moving.
+   * TODO: Maybe add a separate interface call to inform about?
+   */
+  //@{
+  glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO);
+
+  glVertexAttribPointer(m_hVertex, 3, GL_FLOAT, GL_TRUE, sizeof(sLight), BUFFER_OFFSET(offsetof(sLight, vertex)));
+  glEnableVertexAttribArray(m_hVertex);
+
+  glVertexAttribPointer(m_hNormal, 3, GL_FLOAT, GL_TRUE, sizeof(sLight), BUFFER_OFFSET(offsetof(sLight, normal)));
+  glEnableVertexAttribArray(m_hNormal);
+
+  glVertexAttribPointer(m_hColor, 4, GL_FLOAT, GL_TRUE, sizeof(sLight), BUFFER_OFFSET(offsetof(sLight, color)));
+  glEnableVertexAttribArray(m_hColor);
+
+  glVertexAttribPointer(m_hCoord, 2, GL_FLOAT, GL_TRUE, sizeof(sLight), BUFFER_OFFSET(offsetof(sLight, coord)));
+  glEnableVertexAttribArray(m_hCoord);
+  //@}
+
   // I know I'm not scaling by time here to get a constant framerate,
   // but I believe this to be acceptable for this application
   m_pBlobby->AnimatePoints(m_fTicks);
   m_pBlobby->March();
   glClear(GL_DEPTH_BUFFER_BIT);
 
-  glEnable(GL_DEPTH_TEST);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(m_fFOV, m_fAspectRatio, 0.05, 100.0);
+  m_modelMat = glm::mat4(1.0f);
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  if (!m_bShowCube)
+  {
+    m_projMat = glm::mat4(1.0f);
+    RenderGradientBackground();
+  }
+
+  m_projMat = glm::perspective(glm::radians(m_fFOV), m_fAspectRatio, 0.05f, 100.0f);
+  m_normalMat = glm::transpose(glm::inverse(glm::mat3(m_modelMat)));
+  m_textureMat = glm::rotate(glm::mat4(1.0f), glm::radians(m_fTicks * 20.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
   glEnable(GL_CULL_FACE);
 
-  if (m_bShowDebug )
+  if (m_bShowDebug)
   {
     glDisable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
-    glDisable(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE0);
-    glDisable(GL_TEXTURE_CUBE_MAP);
-    CVector vertices[] = {
-      CVector(0.25, 0.25, -3), CVector(1, 0.25, -3), CVector(0.25, 1, -3),
-      CVector(0, 0, -2), CVector(0.75, 0, -2), CVector(0, 0.75, -2),
-      CVector(0.25, 0.25, -4), CVector(1, 0.25, -4), CVector(0.25, 1, -4),
-      CVector(0, 0, -5), CVector(0.75, 0, -5), CVector(0, 0.75, -5),
+
+    static glm::vec3 vertices[] = {
+      glm::vec3(0.25, 0.25, -3), glm::vec3(1, 0.25, -3), glm::vec3(0.25, 1, -3),
+      glm::vec3(0, 0, -2), glm::vec3(0.75, 0, -2), glm::vec3(0, 0.75, -2),
+      glm::vec3(0.25, 0.25, -4), glm::vec3(1, 0.25, -4), glm::vec3(0.25, 1, -4),
+      glm::vec3(0, 0, -5), glm::vec3(0.75, 0, -5), glm::vec3(0, 0.75, -5),
     };
-    CVector tricolors[] = {
-      CVector(0.88, 0.1, 0.00), CVector(0, 0.5, 1.0),
-      CVector(0.88, 0.1, 0.00), CVector(0, 0.5, 1.0)
+    static glm::vec4 tricolors[] = {
+      glm::vec4(0.88f, 0.1f, 0.0f, 1.0f), glm::vec4(0.0f, 0.5f, 1.0f, 1.0f),
+      glm::vec4(0.88f, 0.1f, 0.0f, 1.0f), glm::vec4(0.0f, 0.5f, 1.0f, 1.0f)
     };
 
-    glBegin(GL_TRIANGLES);
-    for (size_t i=0;i<12;++i)
+    static sLight light[12];
+    for (size_t i = 0; i < 12; ++i)
     {
-      glNormal3f(g_cubeVertices[i].normal.x, g_cubeVertices[i].normal.y,
-                 g_cubeVertices[i].normal.z);
-      glColor4f(tricolors[i / 3].x, tricolors[i / 3].y,
-                tricolors[i / 3].z, 1.0);
-
-      glVertex3f(vertices[i].x, vertices[i].y,
-                 vertices[i].z);
+      light[i].normal = g_cubeVertices[i].normal;
+      light[i].color = tricolors[i / 3];
+      light[i].vertex = vertices[i];
     }
-    glEnd();
-    glColor4f(1,1,1,1);
+    Enable();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*12, light, GL_STATIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 12);
+    Disable();
   }
 
   // setup cubemap
-  glEnable(GL_TEXTURE_2D);
+  m_texture0Used = 1;
   glFrontFace(GL_CW);
-  glEnable(GL_TEXTURE_CUBE_MAP);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeTexture);
-  glEnable(GL_TEXTURE_GEN_S);
-  glEnable(GL_TEXTURE_GEN_R);
-  glEnable(GL_TEXTURE_GEN_T);
-  glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-  glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-  glTexGenf(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-
-  glMatrixMode(GL_TEXTURE);
-  glLoadIdentity();
-  glRotatef(m_fTicks * 20.0 , 0.0, 1.0, 0.0);
 
   // draw the box (inside-out)
-  if (m_bShowCube )
+  if (m_bShowCube)
   {
-    glBegin(GL_TRIANGLE_STRIP);
-    for (size_t i=0;i<24;++i)
+    sLight light[24];
+    for (size_t i = 0; i < 24; ++i)
     {
-      glNormal3f(g_cubeVertices[i].normal.x, g_cubeVertices[i].normal.y,
-                 g_cubeVertices[i].normal.z);
-      glVertex3f(g_cubeVertices[i].position.x, g_cubeVertices[i].position.y,
-                 g_cubeVertices[i].position.z);
+      light[i].normal = g_cubeVertices[i].normal;
+      light[i].color = glm::vec4(1.0f);
+      light[i].vertex = g_cubeVertices[i].position;
     }
-    glEnd();
+
+    Enable();
+    glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*24, light, GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 24);
+    Disable();
   }
 
   if (m_bShowBlob)
   {
+    // On original was with "glDisable(GL_TEXTURE_CUBE_MAP);" this unused.
+    // For this the teture is still bind but with m_texture0Used = 0 to shader
+    // prevented to use
+    m_texture0Used = 0;
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_diffuseTexture);
-    glDisable(GL_TEXTURE_CUBE_MAP);
-    glDisable(GL_TEXTURE_GEN_S);
-    glDisable(GL_TEXTURE_GEN_R);
-    glDisable(GL_TEXTURE_GEN_T);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
+    m_texture1Used = 1;
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_specTexture);
-    glEnable(GL_TEXTURE_CUBE_MAP);
-    glEnable(GL_TEXTURE_GEN_S);
-    glEnable(GL_TEXTURE_GEN_R);
-    glEnable(GL_TEXTURE_GEN_T);
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_EXT);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glMatrixMode(GL_TEXTURE);
-    glLoadIdentity();
-    glRotatef(m_fTicks * 20.0 , 0.0, 1.0, 0.0);
 
     glFrontFace(GL_CCW);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glTranslatef(0.0, 0.0, -0.8);
-
+    m_modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -0.8f));
+    m_normalMat = glm::transpose(glm::inverse(glm::mat3(m_modelMat)));
     m_pBlobby->Render();
   }
 
   glActiveTexture(GL_TEXTURE1);
-  glMatrixMode(GL_TEXTURE);
-  glLoadIdentity();
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_TEXTURE_CUBE_MAP);
-  glDisable(GL_TEXTURE_GEN_S);
-  glDisable(GL_TEXTURE_GEN_T);
-  glDisable(GL_TEXTURE_GEN_R);
   glBindTexture(GL_TEXTURE_2D, 0);
+  m_texture1Used = 0;
 
   glActiveTexture(GL_TEXTURE0);
-  glMatrixMode(GL_TEXTURE);
-  glLoadIdentity();
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_TEXTURE_CUBE_MAP);
-  glDisable(GL_TEXTURE_GEN_S);
-  glDisable(GL_TEXTURE_GEN_T);
-  glDisable(GL_TEXTURE_GEN_R);
   glBindTexture(GL_TEXTURE_2D, 0);
+  m_texture0Used = 0;
 
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
-  glMatrixMode(GL_TEXTURE);
-  glLoadIdentity();
+
   // increase tick count
   m_fTicks += g_fTickSpeed;
+
+  glDisableVertexAttribArray(m_hVertex);
+  glDisableVertexAttribArray(m_hNormal);
+  glDisableVertexAttribArray(m_hColor);
+  glDisableVertexAttribArray(m_hCoord);
 }
 
 void CScreensaverCpBlobs::SetDefaults()
@@ -329,9 +315,9 @@ void CScreensaverCpBlobs::SetDefaults()
   m_WorldRotSpeeds.y = 0.5f;
   m_WorldRotSpeeds.z = 0.25f;
 
-  m_strCubemap = kodi::GetAddonPath() + "/resources/cube.dds";
-  m_strDiffuseCubemap = kodi::GetAddonPath() + "/resources/cube_diffuse.dds";
-  m_strSpecularCubemap = kodi::GetAddonPath() + "/resources/cube_specular.dds";
+  m_strCubemap = kodi::GetAddonPath("/resources/cube.dds");
+  m_strDiffuseCubemap = kodi::GetAddonPath("/resources/cube_diffuse.dds");
+  m_strSpecularCubemap = kodi::GetAddonPath("/resources/cube_specular.dds");
 
   m_pBlobby->m_fMoveScale = 0.3f;
 
@@ -377,48 +363,78 @@ void CScreensaverCpBlobs::SetDefaults()
 
   m_pBlobby->SetDensity( 32 );
   m_pBlobby->m_TargetValue = 24.0f;
-  m_BGTopColor = CRGBA(0, 0, 0, 255);
-  m_BGBottomColor = CRGBA(0, 0, 100, 255);
+  m_BGTopColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  m_BGBottomColor = glm::vec4(0.0f, 0.0f, 0.4f, 1.0f);
 }
 
 /*
  * fill in background vertex array with values that will
  * completely cover screen
  */
-void CScreensaverCpBlobs::SetupGradientBackground(const CRGBA& dwTopColor, const CRGBA& dwBottomColor)
+void CScreensaverCpBlobs::SetupGradientBackground(const glm::vec4& dwTopColor, const glm::vec4& dwBottomColor)
 {
-  float x1 = -0.5f;
-  float y1 = -0.5f;
-  float x2 = (float)Width() - 0.5f;
-  float y2 = (float)Height() - 0.5f;
+  float x1 = -1.0f;
+  float y1 = -1.0f;
+  float x2 = 1.0f;
+  float y2 = 1.0f;
 
-  m_BGVertices[0].position = CVector( x2, y1, 0.0f);
+  m_BGVertices[0].position = glm::vec3(x2, y1, 0.0f);
   m_BGVertices[0].color = dwTopColor;
 
-  m_BGVertices[1].position = CVector( x2, y2, 0.0f);
+  m_BGVertices[1].position = glm::vec3(x2, y2, 0.0f);
   m_BGVertices[1].color = dwBottomColor;
 
-  m_BGVertices[2].position = CVector( x1, y1, 0.0f);
+  m_BGVertices[2].position = glm::vec3(x1, y1, 0.0f);
   m_BGVertices[2].color = dwTopColor;
 
-  m_BGVertices[3].position = CVector( x1, y2, 0.0f);
+  m_BGVertices[3].position = glm::vec3(x1, y2, 0.0f);
   m_BGVertices[3].color = dwBottomColor;
 }
 
 void CScreensaverCpBlobs::RenderGradientBackground()
 {
-  glDisable(GL_TEXTURE_2D);
-  glActiveTexture(GL_TEXTURE0);
-  glDisable(GL_TEXTURE_CUBE_MAP);
-  glBegin(GL_TRIANGLE_STRIP);
-  for (size_t i=0;i<4;++i)
+  sLight light[4];
+  for (size_t i = 0; i < 4; ++i)
   {
-    glColor3f(m_BGVertices[i].color.r/255.0, m_BGVertices[i].color.g/255.0,
-              m_BGVertices[i].color.b/255.0);
-    glVertex3f(m_BGVertices[i].position.x, m_BGVertices[i].position.y,
-               m_BGVertices[i].position.z);
+    light[i].color = m_BGVertices[i].color;
+    light[i].vertex = m_BGVertices[i].position;
   }
-  glEnd();
+  Enable();
+  glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*4, light, GL_STATIC_DRAW);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  Disable();
+}
+
+void CScreensaverCpBlobs::OnCompiledAndLinked()
+{
+  // Variables passed directly to the Vertex shader
+  m_projMatLoc = glGetUniformLocation(ProgramHandle(), "u_projectionMatrix");
+  m_modelViewMatLoc = glGetUniformLocation(ProgramHandle(), "u_modelViewMatrix");
+  m_transposeAdjointModelViewMatrixLoc = glGetUniformLocation(ProgramHandle(), "u_transposeAdjointModelViewMatrix");
+  m_textureMatLoc = glGetUniformLocation(ProgramHandle(), "u_textureMatrix");
+  m_uTexture0UsedLoc = glGetUniformLocation(ProgramHandle(), "u_texture0Enabled");
+  m_uTexture1UsedLoc = glGetUniformLocation(ProgramHandle(), "u_texture1Enabled");
+  m_uTexUnit0 = glGetUniformLocation(ProgramHandle(), "u_texUnit0");
+  m_uTexUnit1 = glGetUniformLocation(ProgramHandle(), "u_texUnit1");
+
+  m_hVertex = glGetAttribLocation(ProgramHandle(), "a_vertex");
+  m_hNormal = glGetAttribLocation(ProgramHandle(), "a_normal");
+  m_hColor = glGetAttribLocation(ProgramHandle(), "a_color");
+  m_hCoord = glGetAttribLocation(ProgramHandle(), "a_coord");
+}
+
+bool CScreensaverCpBlobs::OnEnabled()
+{
+  // This is called after glUseProgram()
+  glUniformMatrix4fv(m_projMatLoc, 1, GL_FALSE, glm::value_ptr(m_projMat));
+  glUniformMatrix4fv(m_modelViewMatLoc, 1, GL_FALSE, glm::value_ptr(m_modelMat));
+  glUniformMatrix3fv(m_transposeAdjointModelViewMatrixLoc, 1, GL_FALSE, glm::value_ptr(m_normalMat));
+  glUniformMatrix4fv(m_textureMatLoc, 1, GL_FALSE, glm::value_ptr(m_textureMat));
+  glUniform1i(m_uTexture0UsedLoc, m_texture0Used);
+  glUniform1i(m_uTexture1UsedLoc, m_texture1Used);
+  glUniform1i(m_uTexUnit0, 0);
+  glUniform1i(m_uTexUnit1, 1);
+  return true;
 }
 
 ADDONCREATOR(CScreensaverCpBlobs);

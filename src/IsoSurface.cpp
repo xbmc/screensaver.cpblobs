@@ -1,16 +1,34 @@
+/*
+ *  Copyright (C) 2005-2019 Team Kodi
+ *  Copyright (C) Simon Windmill (siw@coolpowers.com)
+ *  Ported to Kodi GL4 by Alwin Esch <alwinus@kodi.tv>
+ *  This file is part of Kodi - https://kodi.tv
+ *
+ *  This Program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This Program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Kodi; see the file COPYING.  If not, see
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
+
 // Code to polygonize data from a scalar field using the
 // marching cubes algorithm
-// Simon Windmill (siw@coolpowers.com)
 // Derived from code placed into the public domain by Cory Bloyd
 
-#include <math.h>
 #include "IsoSurface.h"
+#include "cpBlobsMain.h"
+
+#include <math.h>
 #include <vector>
-#if defined(__APPLE__)
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
 
 // cube vertices for marching cubes
 static const float g_CubeOffsetVertices[8][3] =
@@ -43,36 +61,33 @@ const int MAXVXS = 32000;
 
 struct Vertex
 {
-  CVector position;
-  CVector normal;
-  CRGBA color;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec4 color;
   float tu, tv;
 };
 
-#define D3DFVF_CUSTOMVERTEX ( D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
-
 ///////////////////////////////////////////////////////////////////////////////
 
-IsoSurface::IsoSurface()
+CIsoSurface::CIsoSurface(CScreensaverCpBlobs* base) : m_base(base)
 {
-  SetDensity( 24 );
+  SetDensity(24);
 
   m_TargetValue = 18.0f;
 
-  m_pVxs = new CVector[MAXVXS];
-  m_pNorms = new CVector[MAXVXS];
+  m_pVxs = new glm::vec3[MAXVXS];
+  m_pNorms = new glm::vec3[MAXVXS];
 }
 
-
-IsoSurface::~IsoSurface()
+CIsoSurface::~CIsoSurface()
 {
-    delete []m_pVxs;
-    delete []m_pNorms;
+  delete []m_pVxs;
+  delete []m_pNorms;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void IsoSurface::SetDensity( int density )
+void CIsoSurface::SetDensity(int density)
 {
   m_DatasetSize = density;
   m_StepSize = 1.0f / m_DatasetSize;
@@ -80,101 +95,87 @@ void IsoSurface::SetDensity( int density )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float IsoSurface::GetOffset( float val1, float val2, float wanted )
+float CIsoSurface::GetOffset(float val1, float val2, float wanted)
 {
   float delta = val2 - val1;
 
-  if( delta == 0.0 )
+  if (delta == 0.0)
     return 0.5f;
 
-  return ( wanted - val1 ) / delta;
+  return (wanted - val1) / delta;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // calculates surface normal at a particular position of the isosurface
-void IsoSurface::GetNormal(CVector& normal, CVector &position)
+void CIsoSurface::GetNormal(glm::vec3& normal, glm::vec3 &position)
 {
-  normal.x = Sample( position.x-0.01f, position.y, position.z ) - Sample( position.x+0.01f, position.y, position.z );
-  normal.y = Sample( position.x, position.y-0.01f, position.z ) - Sample( position.x, position.y+0.01f, position.z );
-  normal.z = Sample( position.x, position.y, position.z-0.01f ) - Sample( position.x, position.y, position.z );
-  normal.Normalize();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// this will be overridden
-float IsoSurface::Sample( float mx, float my, float mz )
-{
-  return 0.0f;
+  normal.x = Sample(position.x-0.01f, position.y, position.z) - Sample(position.x+0.01f, position.y, position.z);
+  normal.y = Sample(position.x, position.y-0.01f, position.z) - Sample(position.x, position.y+0.01f, position.z);
+  normal.z = Sample(position.x, position.y, position.z-0.01f) - Sample(position.x, position.y, position.z);
+  normal = glm::normalize(normal);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // march along surface in each direction
-void IsoSurface::March()
+void CIsoSurface::March()
 {
   m_iVxCount = 0;
   m_iFaceCount = 0;
 
   for ( int x = 0; x < m_DatasetSize; x++ )
+  {
     for ( int y = 0; y < m_DatasetSize; y++ )
+    {
       for ( int z = 0; z < m_DatasetSize; z++ )
       {
         MarchCube( x * m_StepSize, y * m_StepSize, z * m_StepSize, m_StepSize );
       }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // renders the isosurface to given D3D device - just geometry, all texture states
 // etc. should be done outside of this
-void IsoSurface::Render()
+void CIsoSurface::Render()
 {
-  std::vector<Vertex> pVertices(m_iVxCount);
+  std::vector<sLight> pVertices(m_iVxCount);
 
   for ( int n = 0; n < m_iVxCount; n++ )
   {
-    pVertices[n].position.x = m_pVxs[n].x - 0.5f;
-    pVertices[n].position.y = m_pVxs[n].y - 0.5f;
-    pVertices[n].position.z = m_pVxs[n].z - 0.5f;
+    pVertices[n].vertex.x = m_pVxs[n].x - 0.5f;
+    pVertices[n].vertex.y = m_pVxs[n].y - 0.5f;
+    pVertices[n].vertex.z = m_pVxs[n].z - 0.5f;
 
     pVertices[n].normal.x = m_pNorms[n].x;
     pVertices[n].normal.y = m_pNorms[n].y;
     pVertices[n].normal.z = m_pNorms[n].z;
-    pVertices[n].normal.Normalize();
+    pVertices[n].normal = glm::normalize(pVertices[n].normal);
 
     // these UV coordinated are possibly not the most useful
-    pVertices[n].tu = m_pVxs[n].x;
-    pVertices[n].tv = m_pVxs[n].y;
-
-    pVertices[n].color = CRGBA(255, 255, 255, 255);
+    pVertices[n].coord = m_pVxs[n];
+    pVertices[n].color = glm::vec4(1.0f);
   }
 
-
-  glBegin(GL_TRIANGLES);
-  for ( int n = 0; n < m_iVxCount; n++ )
-  {
-    glColor3f(pVertices[n].color.r/255.0, pVertices[n].color.g/255.0,
-              pVertices[n].color.b/255.0);
-    glNormal3f(pVertices[n].normal.x, pVertices[n].normal.y, pVertices[n].normal.z);
-    glTexCoord2f(pVertices[n].tu, pVertices[n].tv);
-    glVertex3f(pVertices[n].position.x, pVertices[n].position.y,
-               pVertices[n].position.z);
-  }
-  glEnd();
+  m_base->Enable();
+  glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*m_iVxCount, &pVertices[0], GL_DYNAMIC_DRAW);
+  glDrawArrays(GL_TRIANGLES, 0, m_iVxCount);
+  m_base->Disable();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void IsoSurface::MarchCube( float fX, float fY, float fZ, float fScale )
+void CIsoSurface::MarchCube( float fX, float fY, float fZ, float fScale )
 {
   extern int aiCubeEdgeFlags[256];
   extern int a2iTriangleConnectionTable[256][16];
 
   float afCubeValue[8];
-  CVector asEdgeVertex[12];
-  CVector asEdgeNorm[12];
+  glm::vec3 asEdgeVertex[12];
+  glm::vec3 asEdgeNorm[12];
 
   //Make a local copy of the values at the cube's corners
   for( int iVertex = 0; iVertex < 8; iVertex++ )
