@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 enable_language(CXX)
 
 find_package(Kodi REQUIRED)
+find_package(glm REQUIRED)
 
 if(APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM)
   find_package(OpenGl REQUIRED)
@@ -35,8 +36,7 @@ set(CPBLOBS_SOURCES src/Blobby.cpp
 
 set(CPBLOBS_HEADERS src/Blobby.h
                     src/cpBlobsMain.h
-                    src/IsoSurface.h
-                    src/types.h)
+                    src/IsoSurface.h)
 
 list(APPEND DEPLIBS soil2)
 
