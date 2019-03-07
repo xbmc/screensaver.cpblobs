@@ -160,10 +160,10 @@ void CIsoSurface::Render()
     pVertices[n].color = glm::vec4(1.0f);
   }
 
-  m_base->Enable();
+  m_base->EnableShader();
   glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*m_iVxCount, &pVertices[0], GL_DYNAMIC_DRAW);
   glDrawArrays(GL_TRIANGLES, 0, m_iVxCount);
-  m_base->Disable();
+  m_base->DisableShader();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

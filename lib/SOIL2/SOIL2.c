@@ -2794,6 +2794,9 @@ int query_cubemap_capability( void )
 				"GL_ARB_texture_cube_map" ) )
 		&&
 			(0 == SOIL_GL_ExtensionSupported(
+				"GL_ARB_texture_cube_map_array" ) )
+		&&
+			(0 == SOIL_GL_ExtensionSupported(
 				"GL_EXT_texture_cube_map" ) )
 			)
 		{

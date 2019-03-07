@@ -21,10 +21,6 @@ elseif(APP_RENDER_SYSTEM STREQUAL "gles")
   add_definitions(${OPENGLES_DEFINITIONS})
 endif()
 
-if(NOT OPENGL_FOUND AND NOT OPENGLES_FOUND)
-  message(FATAL_ERROR "No rendering API found. Bailing")
-endif()
-
 add_subdirectory(lib/SOIL2)
 
 include_directories(${KODI_INCLUDE_DIR}/.. # Hack way with "/..", need bigger Kodi cmake rework to match right include ways

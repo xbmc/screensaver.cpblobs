@@ -23,8 +23,8 @@
 #pragma once
 
 #include <kodi/addon-instance/Screensaver.h>
-#include <kodi/gui/OpenGL/GL.h>
-#include <kodi/gui/OpenGL/Shader.h>
+#include <kodi/gui/gl/GL.h>
+#include <kodi/gui/gl/Shader.h>
 #include <glm/gtc/type_ptr.hpp>
 
 struct sLight

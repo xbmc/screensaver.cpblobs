@@ -32,6 +32,7 @@ set(HEADER_FILES
 
 add_library(soil2 STATIC ${SRC_FILES} ${HEADER_FILES})
 target_include_directories(soil2 PUBLIC ${CMAKE_CURRENT_LIST_DIR}/..)
+target_link_libraries(soil2 PUBLIC ${OPENGL_LIBRARIES})
 if(CORE_SYSTEM_NAME STREQUAL osx)
   target_link_libraries(soil2 PUBLIC "-framework CoreFoundation")
 endif()
