@@ -1,14 +1,10 @@
 #version 130
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 // Attributes
-attribute vec4 a_vertex;
-attribute vec4 a_normal;
-attribute vec4 a_color;
-attribute vec2 a_coord;
+in vec4 a_vertex;
+in vec4 a_normal;
+in vec4 a_color;
+in vec2 a_coord;
 
 // Uniforms
 uniform mat4 u_projectionMatrix;

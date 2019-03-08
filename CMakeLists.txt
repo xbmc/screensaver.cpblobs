@@ -1,10 +1,7 @@
+cmake_minimum_required(VERSION 3.5)
 project(screensaver.cpblobs)
 
-cmake_minimum_required(VERSION 3.0)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
-
-enable_language(CXX)
 
 find_package(Kodi REQUIRED)
 find_package(glm REQUIRED)
@@ -19,10 +16,6 @@ elseif(APP_RENDER_SYSTEM STREQUAL "gles")
   set(DEPLIBS ${OPENGLES_LIBRARIES})
   set(includes ${OPENGLES_INCLUDE_DIR})
   add_definitions(${OPENGLES_DEFINITIONS})
-endif()
-
-if(NOT OPENGL_FOUND AND NOT OPENGLES_FOUND)
-  message(FATAL_ERROR "No rendering API found. Bailing")
 endif()
 
 add_subdirectory(lib/SOIL2)

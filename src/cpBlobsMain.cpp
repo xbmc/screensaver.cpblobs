@@ -118,15 +118,32 @@ CScreensaverCpBlobs::~CScreensaverCpBlobs()
  */
 bool CScreensaverCpBlobs::Start()
 {
-  if (!CreateShader("vert.glsl", "frag.glsl") || !CompileAndLink())
+  std::string fraqShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
+  std::string vertShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
+  if (!LoadShaderFiles(vertShader, fraqShader) || !CompileAndLink())
   {
     kodi::Log(ADDON_LOG_ERROR, "Failed to create and compile shader");
     return false;
   }
 
   m_cubeTexture = SOIL_load_OGL_single_cubemap(m_strCubemap.c_str(), "UWSNED", 4, 0, 0);
+  if (m_cubeTexture == 0)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "failed to create SOIL texture '%s', SOIL error '%s'", m_strCubemap.c_str(), SOIL_last_result());
+    return false;
+  }
   m_diffuseTexture = SOIL_load_OGL_single_cubemap(m_strDiffuseCubemap.c_str(), "UWSNED", 4, 0, 0);
+  if (m_diffuseTexture == 0)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "failed to create SOIL texture '%s', SOIL error '%s'", m_strDiffuseCubemap.c_str(), SOIL_last_result());
+    return false;
+  }
   m_specTexture = SOIL_load_OGL_single_cubemap(m_strSpecularCubemap.c_str(), "UWSNED", 4, 0, 0);
+  if (m_specTexture == 0)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "failed to create SOIL texture '%s', SOIL error '%s'", m_strSpecularCubemap.c_str(), SOIL_last_result());
+    return false;
+  }
 
   SetupGradientBackground(m_BGTopColor, m_BGBottomColor);
 
@@ -237,10 +254,10 @@ void CScreensaverCpBlobs::Render()
       light[i].color = tricolors[i / 3];
       light[i].vertex = vertices[i];
     }
-    Enable();
+    EnableShader();
     glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*12, light, GL_STATIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 12);
-    Disable();
+    DisableShader();
   }
 
   // setup cubemap
@@ -260,10 +277,10 @@ void CScreensaverCpBlobs::Render()
       light[i].vertex = g_cubeVertices[i].position;
     }
 
-    Enable();
+    EnableShader();
     glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*24, light, GL_DYNAMIC_DRAW);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 24);
-    Disable();
+    DisableShader();
   }
 
   if (m_bShowBlob)
@@ -315,9 +332,9 @@ void CScreensaverCpBlobs::SetDefaults()
   m_WorldRotSpeeds.y = 0.5f;
   m_WorldRotSpeeds.z = 0.25f;
 
-  m_strCubemap = kodi::GetAddonPath("/resources/cube.dds");
-  m_strDiffuseCubemap = kodi::GetAddonPath("/resources/cube_diffuse.dds");
-  m_strSpecularCubemap = kodi::GetAddonPath("/resources/cube_specular.dds");
+  m_strCubemap = kodi::GetAddonPath("resources/cube.dds");
+  m_strDiffuseCubemap = kodi::GetAddonPath("resources/cube_diffuse.dds");
+  m_strSpecularCubemap = kodi::GetAddonPath("resources/cube_specular.dds");
 
   m_pBlobby->m_fMoveScale = 0.3f;
 
@@ -399,10 +416,10 @@ void CScreensaverCpBlobs::RenderGradientBackground()
     light[i].color = m_BGVertices[i].color;
     light[i].vertex = m_BGVertices[i].position;
   }
-  Enable();
+  EnableShader();
   glBufferData(GL_ARRAY_BUFFER, sizeof(sLight)*4, light, GL_STATIC_DRAW);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  Disable();
+  DisableShader();
 }
 
 void CScreensaverCpBlobs::OnCompiledAndLinked()

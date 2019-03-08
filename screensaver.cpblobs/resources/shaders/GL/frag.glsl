@@ -1,9 +1,5 @@
 #version 130
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 // Uniforms
 uniform samplerCube u_texUnit0;
 uniform samplerCube u_texUnit1;
