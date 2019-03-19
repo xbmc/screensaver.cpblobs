@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 // Attributes
 in vec4 a_vertex;
@@ -51,4 +51,3 @@ void main()
 
   v_frontColor = a_color;
 }
-
