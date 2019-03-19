@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 // Uniforms
 uniform samplerCube u_texUnit0;
@@ -10,6 +10,8 @@ uniform bool u_texture1Enabled;
 in vec4 v_frontColor;
 in vec3 v_texCoord0;
 in vec3 v_texCoord1;
+
+out vec4 fragColor;
 
 void main()
 {
@@ -27,5 +29,5 @@ void main()
   else if (u_texture0Enabled)
     color *= texture(u_texUnit0, v_texCoord0) * v_frontColor;
 
-  gl_FragColor = color;
+  fragColor = color;
 }
