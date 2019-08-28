@@ -2,7 +2,7 @@
 
 This is a [Kodi](http://kodi.tv) screensaver addon.
 
-[![Build Status](https://travis-ci.org/xbmc/screensaver.cpblobs.svg?branch=master)](https://travis-ci.org/xbmc/screensaver.cpblobs)
+[![Build Status](https://travis-ci.org/xbmc/screensaver.cpblobs.svg?branch=Matrix)](https://travis-ci.org/xbmc/screensaver.cpblobs/branches)
 
 ## Build instructions
 
@@ -15,7 +15,7 @@ Also make sure you follow this README from the branch in question.
 The following instructions assume you will have built Kodi already in the `kodi-build` directory 
 suggested by the README.
 
-1. `git clone --branch Leia https://github.com/xbmc/xbmc.git`
+1. `git clone --branch master https://github.com/xbmc/xbmc.git`
 2. `git clone https://github.com/xbmc/screensaver.cpblobs.git`
 3. `cd screensaver.cpblobs && mkdir build && cd build`
 4. `cmake -DADDONS_TO_BUILD=screensaver.cpblobs -DADDON_SRC_PREFIX=../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../../xbmc/kodi-build/addons -DPACKAGE_ZIP=1 ../../xbmc/cmake/addons`
