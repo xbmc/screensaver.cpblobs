@@ -3,6 +3,8 @@
 This is a [Kodi](http://kodi.tv) screensaver addon.
 
 [![Build Status](https://travis-ci.org/xbmc/screensaver.cpblobs.svg?branch=Matrix)](https://travis-ci.org/xbmc/screensaver.cpblobs/branches)
+[![Build Status](https://dev.azure.com/teamkodi/binary-addons/_apis/build/status/xbmc.screensaver.cpblobs?branchName=Matrix)](https://dev.azure.com/teamkodi/binary-addons/_build/latest?definitionId=43&branchName=Matrix)
+<!--- [![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/screensaver.cpblobs?branch=Matrix&svg=true)](https://ci.appveyor.com/project/xbmc/screensaver-cpblobs?branch=Matrix) -->
 
 ## Build instructions
 
