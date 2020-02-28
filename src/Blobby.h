@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2019 Team Kodi
+ *  Copyright (C) 2005-2020 Team Kodi
  *  Copyright (C) Simon Windmill (siw@coolpowers.com)
  *  Ported to Kodi GL4 by Alwin Esch <alwinus@kodi.tv>
  *  This file is part of Kodi - https://kodi.tv
