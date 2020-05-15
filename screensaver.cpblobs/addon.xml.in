@@ -12,7 +12,7 @@
     <summary lang="en">Metaballs moving around</summary>
     <description lang="en">cpBlobs is a screensaver displaying metaballs moving around inside a cube.</description>
     <platform>@PLATFORM@</platform>
-    <license>GPL-2.0</license>
+    <license>GPL-2.0-or-later</license>
     <source>https://github.com/xbmc/screensaver.cpblobs</source>
     <assets>
       <icon>resources/icon.png</icon>
