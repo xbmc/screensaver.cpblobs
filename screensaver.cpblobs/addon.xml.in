@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="screensaver.cpblobs"
-  version="3.2.0"
+  version="3.3.0"
   name="CpBlobs"
   provider-name="Team Kodi">
   <requires>@ADDON_DEPENDS@</requires>
@@ -9,7 +9,9 @@
     point="xbmc.ui.screensaver"
     library_@PLATFORM@="@LIBRARY_FILENAME@"/>
   <extension point="xbmc.addon.metadata">
+    <summary lang="de_DE">Metabälle bewegen sich</summary>
     <summary lang="en_GB">Metaballs moving around</summary>
+    <description lang="de_DE">cpBlobs ist ein Bildschirmschoner, der Metabälle anzeigt, die sich in einem Würfelraum bewegen.</description>
     <description lang="en_GB">cpBlobs is a screensaver displaying metaballs moving around inside a cube.</description>
     <platform>@PLATFORM@</platform>
     <license>GPL-2.0-or-later</license>
