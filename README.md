@@ -3,6 +3,7 @@
 This is a [Kodi](http://kodi.tv) screensaver addon.
 
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/License-GPL%20v2+-blue.svg)](LICENSE.md)
+[![Build and run tests](https://github.com/xbmc/screensaver.cpblobs/actions/workflows/build.yml/badge.svg?branch=Matrix)](https://github.com/xbmc/screensaver.cpblobs/actions/workflows/build.yml)
 [![Build Status](https://jenkins.kodi.tv/view/Addons/job/xbmc/job/screensaver.cpblobs/job/Matrix/badge/icon)](https://jenkins.kodi.tv/blue/organizations/jenkins/xbmc%2Fscreensaver.cpblobs/branches/)
 
 ## Build instructions
