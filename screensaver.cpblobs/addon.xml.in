@@ -19,9 +19,15 @@
       <screenshot>resources/screenshot-02.jpg</screenshot>
       <screenshot>resources/screenshot-03.jpg</screenshot>
     </assets>
+    <summary lang="da_DK">Metabolde der bevæger sig</summary>
     <summary lang="de_DE">Metabälle bewegen sich</summary>
     <summary lang="en_GB">Metaballs moving around</summary>
+    <summary lang="ko_KR">이리저리 움직이는 메타볼</summary>
+    <summary lang="zh_CN">移动的变形球</summary>
+    <description lang="da_DK">cpBlobs er en pauseskærm, der viser metabolde, der bevæger sig rundt inde i en terning.</description>
     <description lang="de_DE">cpBlobs ist ein Bildschirmschoner, der Metabälle anzeigt, die sich in einem Würfelraum bewegen.</description>
     <description lang="en_GB">cpBlobs is a screensaver displaying metaballs moving around inside a cube.</description>
+    <description lang="ko_KR">cpBlobs는 큐브 내부에서 움직이는 메타볼을 표시하는 화면 보호기입니다.</description>
+    <description lang="zh_CN">cpBlobs 是一个显示在立方体中移动的变形球的屏幕保护程序。</description>
   </extension>
 </addon>
