@@ -14,7 +14,7 @@
 
 class CScreensaverCpBlobs;
 
-class ATTRIBUTE_HIDDEN CIsoSurface
+class ATTR_DLL_LOCAL CIsoSurface
 {
 public:
   CIsoSurface(CScreensaverCpBlobs* base);

@@ -24,7 +24,7 @@ struct BlobPoint
 
 class CScreensaverCpBlobs;
 
-class ATTRIBUTE_HIDDEN CBlobby : public CIsoSurface
+class ATTR_DLL_LOCAL CBlobby : public CIsoSurface
 {
 
 public:

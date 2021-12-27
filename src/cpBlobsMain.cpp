@@ -105,8 +105,8 @@ CScreensaverCpBlobs::~CScreensaverCpBlobs()
  */
 bool CScreensaverCpBlobs::Start()
 {
-  std::string fraqShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
-  std::string vertShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
+  std::string fraqShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
+  std::string vertShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
   if (!LoadShaderFiles(vertShader, fraqShader) || !CompileAndLink())
   {
     kodi::Log(ADDON_LOG_ERROR, "Failed to create and compile shader");
@@ -319,9 +319,9 @@ void CScreensaverCpBlobs::SetDefaults()
   m_WorldRotSpeeds.y = 0.5f;
   m_WorldRotSpeeds.z = 0.25f;
 
-  m_strCubemap = kodi::GetAddonPath("resources/cube.dds");
-  m_strDiffuseCubemap = kodi::GetAddonPath("resources/cube_diffuse.dds");
-  m_strSpecularCubemap = kodi::GetAddonPath("resources/cube_specular.dds");
+  m_strCubemap = kodi::addon::GetAddonPath("resources/cube.dds");
+  m_strDiffuseCubemap = kodi::addon::GetAddonPath("resources/cube_diffuse.dds");
+  m_strSpecularCubemap = kodi::addon::GetAddonPath("resources/cube_specular.dds");
 
   m_pBlobby->m_fMoveScale = 0.3f;
 
