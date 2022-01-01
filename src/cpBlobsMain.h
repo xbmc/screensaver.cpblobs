@@ -33,7 +33,7 @@ struct BG_VERTEX
 
 class CBlobby;
 
-class ATTRIBUTE_HIDDEN CScreensaverCpBlobs
+class ATTR_DLL_LOCAL CScreensaverCpBlobs
   : public kodi::addon::CAddonBase,
     public kodi::addon::CInstanceScreensaver,
     public kodi::gui::gl::CShaderProgram
