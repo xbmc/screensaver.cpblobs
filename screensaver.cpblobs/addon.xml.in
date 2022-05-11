@@ -22,6 +22,7 @@
     <summary lang="da_DK">Metabolde der bevæger sig</summary>
     <summary lang="de_DE">Metabälle bewegen sich</summary>
     <summary lang="en_GB">Metaballs moving around</summary>
+    <summary lang="es_ES">Metabolas moviéndose</summary>
     <summary lang="hr_HR">Metalopte koje se kreću uokolo</summary>
     <summary lang="ko_KR">이리저리 움직이는 메타볼</summary>
     <summary lang="pl_PL">Metakulki poruszające się</summary>
@@ -30,6 +31,7 @@
     <description lang="da_DK">cpBlobs er en pauseskærm, der viser metabolde, der bevæger sig rundt inde i en terning.</description>
     <description lang="de_DE">cpBlobs ist ein Bildschirmschoner, der Metabälle anzeigt, die sich in einem Würfelraum bewegen.</description>
     <description lang="en_GB">cpBlobs is a screensaver displaying metaballs moving around inside a cube.</description>
+    <description lang="es_ES">cpBlobs es un salvapantallas que muestra metabolas moviéndose dentro de un cubo.</description>
     <description lang="hr_HR">cpBlobs je čuvar zaslona koji prikazuje metalopte koje se kreću uokolo unutar kocke.</description>
     <description lang="ko_KR">cpBlobs는 큐브 내부에서 움직이는 메타볼을 표시하는 화면 보호기입니다.</description>
     <description lang="pl_PL">cpBlobs to wygaszacz ekranu wyświetlający metakulki poruszające się wewnątrz kostki.</description>
