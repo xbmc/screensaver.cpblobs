@@ -27,6 +27,7 @@
     <summary lang="ko_KR">이리저리 움직이는 메타볼</summary>
     <summary lang="pl_PL">Metakulki poruszające się</summary>
     <summary lang="ru_RU">Метасферы перемещаются в пространстве</summary>
+    <summary lang="uk_UA">Метасфери рухаються у просторі</summary>
     <summary lang="zh_CN">移动的变形球</summary>
     <description lang="da_DK">cpBlobs er en pauseskærm, der viser metabolde, der bevæger sig rundt inde i en terning.</description>
     <description lang="de_DE">cpBlobs ist ein Bildschirmschoner, der Metabälle anzeigt, die sich in einem Würfelraum bewegen.</description>
@@ -36,6 +37,7 @@
     <description lang="ko_KR">cpBlobs는 큐브 내부에서 움직이는 메타볼을 표시하는 화면 보호기입니다.</description>
     <description lang="pl_PL">cpBlobs to wygaszacz ekranu wyświetlający metakulki poruszające się wewnątrz kostki.</description>
     <description lang="ru_RU">cpBlobs — заставка, демонстрирующая метасферы, перемещающейся внутри куба.</description>
+    <description lang="uk_UA">cpBlobs — заставка, яка показує метасфери, що рухаються всередині куба.</description>
     <description lang="zh_CN">cpBlobs 是一个显示在立方体中移动的变形球的屏幕保护程序。</description>
   </extension>
 </addon>
