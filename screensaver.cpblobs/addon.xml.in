@@ -26,6 +26,7 @@
     <summary lang="fi_FI">Ympäriinsä liikkuvia metapalloja</summary>
     <summary lang="fr_FR">Billes de métal se déplaçant</summary>
     <summary lang="hr_HR">Metalopte koje se kreću uokolo</summary>
+    <summary lang="it_IT">Metaball in movimento</summary>
     <summary lang="ko_KR">이리저리 움직이는 메타볼</summary>
     <summary lang="pl_PL">Metakulki poruszające się</summary>
     <summary lang="ru_RU">Метасферы перемещаются в пространстве</summary>
@@ -38,6 +39,7 @@
     <description lang="fi_FI">cpBlobs on näytönsäästäjä, joka näyttää kuution sisällä liikkuvia metapalloja.</description>
     <description lang="fr_FR">cpBlobs est un économiseur d&apos;écran affichant des billes de étal se déplaçant à l&apos;intérieur d&apos;un cube.</description>
     <description lang="hr_HR">cpBlobs je čuvar zaslona koji prikazuje metalopte koje se kreću uokolo unutar kocke.</description>
+    <description lang="it_IT">cpBlobs è uno screensaver che mostra metaball che si muovono all&apos;interno di un cubo.</description>
     <description lang="ko_KR">cpBlobs는 큐브 내부에서 움직이는 메타볼을 표시하는 화면 보호기입니다.</description>
     <description lang="pl_PL">cpBlobs to wygaszacz ekranu wyświetlający metakulki poruszające się wewnątrz kostki.</description>
     <description lang="ru_RU">cpBlobs — заставка, демонстрирующая метасферы, перемещающейся внутри куба.</description>
