@@ -56,20 +56,11 @@ struct Vertex
 
 ///////////////////////////////////////////////////////////////////////////////
 
-CIsoSurface::CIsoSurface(CScreensaverCpBlobs* base) : m_base(base)
+CIsoSurface::CIsoSurface(CScreensaverCpBlobs* base) : m_base(base), m_pVxs(MAXVXS), m_pNorms(MAXVXS)
 {
   SetDensity(24);
 
   m_TargetValue = 18.0f;
-
-  m_pVxs = new glm::vec3[MAXVXS];
-  m_pNorms = new glm::vec3[MAXVXS];
-}
-
-CIsoSurface::~CIsoSurface()
-{
-  delete []m_pVxs;
-  delete []m_pNorms;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
