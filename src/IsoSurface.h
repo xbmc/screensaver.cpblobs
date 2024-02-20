@@ -12,13 +12,15 @@
 #include <kodi/AddonBase.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
+
 class CScreensaverCpBlobs;
 
 class ATTR_DLL_LOCAL CIsoSurface
 {
 public:
   CIsoSurface(CScreensaverCpBlobs* base);
-  virtual ~CIsoSurface();
+  virtual ~CIsoSurface() = default;
 
   virtual float Sample(float mx, float my, float mz) = 0;
 
@@ -27,8 +29,8 @@ public:
   void SetDensity(int density);
 
   float m_TargetValue;
-  glm::vec3 *m_pVxs;
-  glm::vec3 *m_pNorms;
+  std::vector<glm::vec3> m_pVxs;
+  std::vector<glm::vec3> m_pNorms;
   int m_iVxCount;
   int m_iFaceCount;
 

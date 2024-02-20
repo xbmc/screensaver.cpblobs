@@ -14,6 +14,8 @@
 #include <kodi/gui/gl/Shader.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <memory>
+
 struct sLight
 {
   glm::vec3 vertex;
@@ -40,7 +42,7 @@ class ATTR_DLL_LOCAL CScreensaverCpBlobs
 {
 public:
   CScreensaverCpBlobs();
-  virtual ~CScreensaverCpBlobs();
+  virtual ~CScreensaverCpBlobs() override = default;
 
   bool Start() override;
   void Stop() override;
@@ -79,7 +81,7 @@ private:
   GLuint m_diffuseTexture;
   GLuint m_specTexture;
 
-  CBlobby *m_pBlobby;
+  std::unique_ptr<CBlobby> m_pBlobby;
   BG_VERTEX m_BGVertices[4];
   float m_fFOV, m_fAspectRatio;
   float m_fTicks;
