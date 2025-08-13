@@ -75,7 +75,7 @@ const float CScreensaverCpBlobs::g_fTickSpeed = 0.01f;
  * here and load any settings we may have from our config file
  */
 CScreensaverCpBlobs::CScreensaverCpBlobs()
-  : m_pBlobby(nullptr),
+  : m_pBlobby(std::make_unique<CBlobby>(this)),
     m_fTicks(0.0f),
     m_bShowCube(false),
     m_bShowBlob(false),
@@ -85,16 +85,10 @@ CScreensaverCpBlobs::CScreensaverCpBlobs()
   m_diffuseTexture = 0;
   m_specTexture = 0;
 
-  m_pBlobby = new CBlobby(this);
   m_pBlobby->m_iNumPoints = 5;
 
   SetDefaults();
   m_fAspectRatio = (float)Width()/(float)Height();
-}
-
-CScreensaverCpBlobs::~CScreensaverCpBlobs()
-{
-  delete m_pBlobby;
 }
 
 /*
