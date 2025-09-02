@@ -20,6 +20,7 @@
       <screenshot>resources/screenshot-03.jpg</screenshot>
     </assets>
     <summary lang="af_ZA">Metaballe wat rond beweeg</summary>
+    <summary lang="bs_BA">Metakugle se kreću okolo</summary>
     <summary lang="da_DK">Metabolde der bevæger sig</summary>
     <summary lang="de_DE">Metabälle bewegen sich</summary>
     <summary lang="en_GB">Metaballs moving around</summary>
@@ -37,6 +38,7 @@
     <summary lang="uk_UA">Метасфери рухаються у просторі</summary>
     <summary lang="zh_CN">移动的变形球</summary>
     <description lang="af_ZA">cpBlobs is &apos;n skermskut wat metaballe vertoon wat in &apos;n kubus rond beweeg.</description>
+    <description lang="bs_BA">cpBlobs je čuvar ekrana koji prikazuje metakuglice koje se kreću unutar kocke.</description>
     <description lang="da_DK">cpBlobs er en pauseskærm, der viser metabolde, der bevæger sig rundt inde i en terning.</description>
     <description lang="de_DE">cpBlobs ist ein Bildschirmschoner, der Metabälle anzeigt, die sich in einem Würfelraum bewegen.</description>
     <description lang="en_GB">cpBlobs is a screensaver displaying metaballs moving around inside a cube.</description>
