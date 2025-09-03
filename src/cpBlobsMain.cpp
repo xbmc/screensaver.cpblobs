@@ -128,8 +128,11 @@ bool CScreensaverCpBlobs::Start()
 
   SetupGradientBackground(m_BGTopColor, m_BGBottomColor);
 
+#if defined(HAS_GL)
+  glGenVertexArrays(1, &m_vao);
+#endif
+
   glGenBuffers(1, &m_vertexVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO);
 
   m_startOK = true;
   return true;
@@ -147,7 +150,6 @@ void CScreensaverCpBlobs::Stop()
 
   m_startOK = false;
 
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDeleteBuffers(1, &m_vertexVBO);
   m_vertexVBO = 0;
 
@@ -159,6 +161,10 @@ void CScreensaverCpBlobs::Stop()
 
   if (m_specTexture)
     glDeleteTextures(1, &m_specTexture);
+
+#if defined(HAS_GL)
+  glDeleteVertexArrays(1, &m_vao);
+#endif
 }
 
 /*
@@ -177,6 +183,10 @@ void CScreensaverCpBlobs::Render()
    * TODO: Maybe add a separate interface call to inform about?
    */
   //@{
+#if defined(HAS_GL)
+  glBindVertexArray(m_vao);
+#endif
+
   glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO);
 
   glVertexAttribPointer(m_hVertex, 3, GL_FLOAT, GL_TRUE, sizeof(sLight), BUFFER_OFFSET(offsetof(sLight, vertex)));
@@ -301,6 +311,12 @@ void CScreensaverCpBlobs::Render()
   glDisableVertexAttribArray(m_hNormal);
   glDisableVertexAttribArray(m_hColor);
   glDisableVertexAttribArray(m_hCoord);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+#if defined(HAS_GL)
+  glBindVertexArray(0);
+#endif
 }
 
 void CScreensaverCpBlobs::SetDefaults()
